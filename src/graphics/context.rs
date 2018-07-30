@@ -57,6 +57,7 @@ where
     pub(crate) shaders: Vec<Box<dyn ShaderHandle<B>>>,
 
     pub(crate) glyph_brush: GlyphBrush<'static, B::Resources, B::Factory>,
+    pub(crate) batch: spritebatch::SpriteBatch,
 }
 
 impl<B> fmt::Debug for GraphicsContextGeneric<B>
@@ -256,6 +257,7 @@ where
         let globals = Globals {
             mvp_matrix: initial_projection.into(),
         };
+        let spritebatch = spritebatch::SpriteBatch::new(white_image.clone());
 
         let mut gfx = Self {
             shader_globals: globals,
@@ -290,6 +292,7 @@ where
             shaders: vec![draw],
 
             glyph_brush,
+            spritebatch,
         };
         gfx.set_window_mode(window_mode)?;
 
