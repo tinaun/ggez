@@ -13,7 +13,7 @@ use context::Context;
 use error;
 use gfx;
 use gfx::Factory;
-use graphics::{self, BackendSpec, DrawTransform};
+use graphics::{self, GlBackendSpec, BackendSpec, DrawTransform};
 use GameResult;
 
 /// A `SpriteBatch` draws a number of copies of the same image, using a single draw call.
@@ -24,23 +24,27 @@ use GameResult;
 /// un-optimized math; you need to build with optimizations enabled to really get the
 /// speed boost.
 #[derive(Debug, Clone)]
-pub struct SpriteBatch {
-    image: graphics::Image,
+pub struct SpriteBatchGeneric<B> where B: BackendSpec {
+    pub(crate) image: graphics::ImageGeneric<B>,
     sprites: Vec<graphics::DrawParam>,
     blend_mode: Option<BlendMode>,
 }
+
+/// Spritebatch using OpenGL backend.
+pub type SpriteBatch = SpriteBatchGeneric<GlBackendSpec>;
 
 /// An index of a particular sprite in a `SpriteBatch`.
 #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct SpriteIdx(usize);
 
-impl SpriteBatch {
+impl<B> SpriteBatchGeneric<B>
+    where B: BackendSpec + 'static {
     /// Creates a new `SpriteBatch`, drawing with the given image.
     ///
     /// Takes ownership of the `Image`, but cloning an `Image` is
     /// cheap since they have an internal `Arc` containing the actual
     /// image data.
-    pub fn new(image: graphics::Image) -> Self {
+    pub fn new(image: graphics::ImageGeneric<B>) -> Self {
         Self {
             image,
             sprites: vec![],
@@ -122,12 +126,12 @@ impl SpriteBatch {
     }
 
     /// Unwraps and returns the contained `Image`
-    pub fn into_inner(self) -> graphics::Image {
+    pub fn into_inner(self) -> graphics::ImageGeneric<B> {
         self.image
     }
 
     /// Replaces the contained `Image`, returning the old one.
-    pub fn set_image(&mut self, image: graphics::Image) -> graphics::Image {
+    pub fn set_image(&mut self, image: graphics::ImageGeneric<B>) -> graphics::ImageGeneric<B> {
         use std::mem;
         mem::replace(&mut self.image, image)
     }
@@ -141,18 +145,8 @@ impl SpriteBatch {
     pub fn set_filter(&mut self, mode: FilterMode) {
         self.image.set_filter(mode);
     }
-}
 
-impl graphics::Drawable for SpriteBatch {
-    fn draw<D>(&self, ctx: &mut Context, param: D) -> GameResult
-    where
-        D: Into<DrawTransform>,
-    {
-        let param = param.into();
-        // Awkwardly we must update values on all sprites and such.
-        // Also awkwardly we have this chain of colors with differing priorities.
-        self.flush(ctx, &self.image)?;
-        let gfx = &mut ctx.gfx_context;
+    pub(crate) fn draw_raw(&self, gfx: &mut graphics::GraphicsContextGeneric<B>, param: graphics::DrawTransform) -> GameResult {
         let sampler = gfx.samplers
             .get_or_insert(self.image.sampler_info, gfx.factory.as_mut());
         gfx.data.vbuf = gfx.quad_vertex_buffer.clone();
@@ -185,6 +179,16 @@ impl graphics::Drawable for SpriteBatch {
         gfx.calculate_transform_matrix();
         gfx.update_globals()?;
         Ok(())
+    }
+}
+
+impl graphics::Drawable for SpriteBatch {
+    fn draw<D>(&self, ctx: &mut Context, param: D) -> GameResult
+    where
+        D: Into<DrawTransform>,
+    {
+        self.flush(ctx, &self.image)?;
+        self.draw_raw(&mut ctx.gfx_context, param.into())
     }
     fn set_blend_mode(&mut self, mode: Option<BlendMode>) {
         self.blend_mode = mode;

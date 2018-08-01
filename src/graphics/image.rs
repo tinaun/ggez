@@ -28,6 +28,21 @@ where
     pub(crate) debug_id: DebugId,
 }
 
+// For some damn reason, deriving this doesn't seem to work?
+use std::cmp::PartialEq;
+impl<B> PartialEq for ImageGeneric<B>
+where
+    B: BackendSpec {
+    fn eq(&self, other: &Self) -> bool {
+        self.texture == other.texture &&
+        self.texture_handle == other.texture_handle &&
+        self.sampler_info == other.sampler_info &&
+        self.blend_mode == other.blend_mode &&
+        self.width == other.width &&
+        self.height == other.height
+    }
+}
+
 impl<B> ImageGeneric<B>
 where
     B: BackendSpec,
@@ -111,6 +126,44 @@ where
             height: height,
             debug_id,
         })
+    }
+
+
+
+    /// Return the width of the image.
+    pub fn width(&self) -> u16 {
+        self.width
+    }
+
+    /// Return the height of the image.
+    pub fn height(&self) -> u16 {
+        self.height
+    }
+
+    /// Get the filter mode for the image.
+    pub fn get_filter(&self) -> FilterMode {
+        self.sampler_info.filter.into()
+    }
+
+    /// Set the filter mode for the image.
+    pub fn set_filter(&mut self, mode: FilterMode) {
+        self.sampler_info.filter = mode.into();
+    }
+
+    /// Returns the dimensions of the image.
+    pub fn get_dimensions(&self) -> Rect {
+        Rect::new(0.0, 0.0, self.width() as f32, self.height() as f32)
+    }
+
+    /// Gets the `Image`'s `WrapMode` along the X and Y axes.
+    pub fn get_wrap(&self) -> (WrapMode, WrapMode) {
+        (self.sampler_info.wrap_mode.0, self.sampler_info.wrap_mode.1)
+    }
+
+    /// Sets the `Image`'s `WrapMode` along the X and Y axes.
+    pub fn set_wrap(&mut self, wrap_x: WrapMode, wrap_y: WrapMode) {
+        self.sampler_info.wrap_mode.0 = wrap_x;
+        self.sampler_info.wrap_mode.1 = wrap_y;
     }
 }
 
@@ -263,45 +316,9 @@ impl Image {
         Image::from_rgba8(context, size, size, &buffer)
     }
     */
-
-    /// Return the width of the image.
-    pub fn width(&self) -> u16 {
-        self.width
-    }
-
-    /// Return the height of the image.
-    pub fn height(&self) -> u16 {
-        self.height
-    }
-
-    /// Get the filter mode for the image.
-    pub fn get_filter(&self) -> FilterMode {
-        self.sampler_info.filter.into()
-    }
-
-    /// Set the filter mode for the image.
-    pub fn set_filter(&mut self, mode: FilterMode) {
-        self.sampler_info.filter = mode.into();
-    }
-
-    /// Returns the dimensions of the image.
-    pub fn get_dimensions(&self) -> Rect {
-        Rect::new(0.0, 0.0, self.width() as f32, self.height() as f32)
-    }
-
-    /// Gets the `Image`'s `WrapMode` along the X and Y axes.
-    pub fn get_wrap(&self) -> (WrapMode, WrapMode) {
-        (self.sampler_info.wrap_mode.0, self.sampler_info.wrap_mode.1)
-    }
-
-    /// Sets the `Image`'s `WrapMode` along the X and Y axes.
-    pub fn set_wrap(&mut self, wrap_x: WrapMode, wrap_y: WrapMode) {
-        self.sampler_info.wrap_mode.0 = wrap_x;
-        self.sampler_info.wrap_mode.1 = wrap_y;
-    }
 }
 
-impl fmt::Debug for Image {
+impl<B> fmt::Debug for ImageGeneric<B> where B: BackendSpec {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,

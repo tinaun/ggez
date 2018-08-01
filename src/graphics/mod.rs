@@ -52,7 +52,7 @@ type ShaderResourceType = [f32; 4];
 
 /// A marker trait saying that something is a label for a particular backend,
 /// with associated gfx-rs types for that backend.
-pub trait BackendSpec: fmt::Debug {
+pub trait BackendSpec: fmt::Debug + Clone {
     /// gfx resource type
     type Resources: gfx::Resources;
     /// gfx factory type

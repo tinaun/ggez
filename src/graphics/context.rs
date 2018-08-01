@@ -57,7 +57,7 @@ where
     pub(crate) shaders: Vec<Box<dyn ShaderHandle<B>>>,
 
     pub(crate) glyph_brush: GlyphBrush<'static, B::Resources, B::Factory>,
-    pub(crate) batch: spritebatch::SpriteBatch,
+    pub(crate) spritebatch: Rc<spritebatch::SpriteBatchGeneric<B>>,
 }
 
 impl<B> fmt::Debug for GraphicsContextGeneric<B>
@@ -257,7 +257,7 @@ where
         let globals = Globals {
             mvp_matrix: initial_projection.into(),
         };
-        let spritebatch = spritebatch::SpriteBatch::new(white_image.clone());
+        let spritebatch = Rc::new(spritebatch::SpriteBatchGeneric::new(white_image.clone()));
 
         let mut gfx = Self {
             shader_globals: globals,
@@ -554,5 +554,21 @@ where
         let logical = dpi::LogicalPosition::new(x as f64, y as f64);
         let physical = dpi::PhysicalPosition::from_logical(logical, self.hidpi_factor.into());
         (physical.x as f32, physical.y as f32)
+    }
+
+
+    /// If the given Image is the same as the one in the sprite batch, add
+    /// it.  Otherwise, draw+flush the sprite batch and switch to the new
+    /// image.
+    pub(crate) fn add_checked(&mut self, image: &ImageGeneric<B>, param: DrawParam) -> GameResult {
+        if image == &self.spritebatch.image {
+            self.spritebatch.add(param);
+        } else {
+            let s = &mut self.spritebatch.clone();
+            s.draw_raw(self, DrawTransform::default())?;
+            s.set_image(image.clone());
+            s.add(param);
+        }
+        Ok(())
     }
 }
