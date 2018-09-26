@@ -216,7 +216,7 @@ impl From<DrawParam> for DrawTransform {
 }
 
 impl DrawTransform {
-    /// Returns a new `PrimitiveDrawParam` with its matrix multiplied
+    /// Returns a new `DrawTransform` with its matrix multiplied
     /// by the given one.
     ///
     /// TODO: Make some way to implement `matrix * self.matrix`, or just implement `Mul`...

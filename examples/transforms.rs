@@ -33,7 +33,7 @@ impl MainState {
                 let fsize = Self::GRID_SIZE as f32;
                 let point = na::Point2::new(fx * Self::GRID_INTERVAL, fy * Self::GRID_INTERVAL);
                 let color = graphics::Color::new(fx / fsize, 0.0, fy / fsize, 1.0);
-                gridmesh_builder.circle(DrawMode::Fill, point, Self::GRID_POINT_RADIUS, 5.0, color);
+                gridmesh_builder.circle(DrawMode::Fill, point, Self::GRID_POINT_RADIUS, 0.1, color);
             }
         }
         let gridmesh = gridmesh_builder.build(ctx)?;
@@ -84,10 +84,9 @@ impl event::EventHandler for MainState {
         let param = graphics::DrawParam::new()
             .dest(na::Point2::new(400.0, 400.0))
             .rotation(self.pos_x / 100.0)
-            .offset(na::Point2::new(64.0, 64.0))
-            .scale(na::Vector2::new(0.5, 0.5))
-            // .src(graphics::Rect::new(0.5, 0.5, 0.5, 0.5))
-            ;
+            // .offset(na::Point2::new(1.0, 1.0))
+            .scale(na::Vector2::new(2.0, 2.0))
+            .src(graphics::Rect::new(0.5, 0.5, 0.5, 0.5));
         let dt = graphics::DrawTransform::from(param);
         println!("transform: {}", dt.matrix);
 

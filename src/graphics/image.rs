@@ -3,6 +3,7 @@ use std::path;
 
 use gfx;
 use image;
+use nalgebra as na;
 
 use context::{Context, DebugId};
 use filesystem;
@@ -329,30 +330,43 @@ impl Drawable for Image {
     where
         D: Into<DrawParam>,
     {
-        let param: DrawParam = param.into();
-        let param: DrawTransform = param.into();
         self.debug_id.assert(ctx);
+        let param: DrawParam = param.into();
 
-        // println!("Matrix: {:#?}", param.matrix);
-        let gfx = &mut ctx.gfx_context;
+        type Vec3 = na::Vector3<f32>;
+
         let src_width = param.src.w;
         let src_height = param.src.h;
-        // We have to mess with the scale to make everything
-        // be its-unit-size-in-pixels.
-        // BUGGO: Based on previous ggez code we need
-        // to have param.scale in this math but there's
-        // no way we can get it...
-        // ...or do we, 'cause we do param.mul() afterwards?
-        // but it doesn't seem to have the same effect on
-        // offset, so.
-        use nalgebra;
-        let real_scale = nalgebra::Vector3::new(
-            src_width * f32::from(self.width),
-            src_height * f32::from(self.height),
-            1.0,
-        );
-        let new_param = param.mul(Matrix4::new_nonuniform_scaling(&real_scale));
-        // let new_param = param;
+        // The target dimensions of the `Image`, in units of pixels,
+        // taking into account the src and scale factors of the param.
+        let scaled_width = f32::from(self.width) * src_width * param.scale.x;
+        let scaled_height = f32::from(self.height) * src_height * param.scale.y;
+
+        let translate = Matrix4::new_translation(&Vec3::new(param.dest.x, param.dest.y, 0.0));
+        let offset = Matrix4::new_translation(&Vec3::new(
+            param.offset.x * scaled_width,
+            param.offset.y * scaled_height,
+            0.0,
+        ));
+        let offset_inverse = Matrix4::new_translation(&Vec3::new(
+            -param.offset.x * scaled_width,
+            -param.offset.y * scaled_height,
+            0.0,
+        ));
+        let scale =
+            Matrix4::new_nonuniform_scaling(&na::Vector3::new(scaled_width, scaled_height, 1.0));
+        let axis_angle = Vec3::z() * param.rotation;
+        let rotation = Matrix4::new_rotation(axis_angle);
+
+        let gfx = &mut ctx.gfx_context;
+
+        let transform = translate * offset * rotation * offset_inverse * scale;
+        let matrix = transform;
+        let new_param = DrawTransform {
+            matrix,
+            color: param.color,
+            src: param.src,
+        };
 
         gfx.update_instance_properties(new_param)?;
         let sampler = gfx
