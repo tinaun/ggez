@@ -118,9 +118,9 @@ impl Canvas {
 impl Drawable for Canvas {
     fn draw<D>(&self, ctx: &mut Context, param: D) -> GameResult
     where
-        D: Into<DrawTransform>,
+        D: Into<DrawParam>,
     {
-        let param = param.into();
+        let param: DrawParam = param.into();
         self.debug_id.assert(ctx);
         // Gotta flip the image on the Y axis here
         // to account for OpenGL's origin being at the bottom-left.

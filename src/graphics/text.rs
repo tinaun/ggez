@@ -373,9 +373,10 @@ impl Text {
 impl Drawable for Text {
     fn draw<D>(&self, ctx: &mut Context, param: D) -> GameResult
     where
-        D: Into<DrawTransform>,
+        D: Into<DrawParam>,
     {
-        let param = param.into();
+        let param: DrawParam = param.into();
+        let param: DrawTransform = param.into();
         // Converts fraction-of-bounding-box to screen coordinates, as required by `draw_queued()`.
         // TODO: Fix for DrawTransform
         // let offset = Point2::new(
