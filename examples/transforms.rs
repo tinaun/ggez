@@ -4,7 +4,7 @@ extern crate ggez;
 extern crate nalgebra;
 
 use ggez::event::{self, KeyCode, KeyMods};
-use ggez::graphics::{self, DrawMode};
+use ggez::graphics::{self, DrawMode, DrawParam, spritebatch};
 use ggez::{Context, GameResult};
 use nalgebra as na;
 use std::env;
@@ -16,6 +16,7 @@ struct MainState {
     angle: graphics::Image,
     screen_bounds: Vec<graphics::Rect>,
     screen_bounds_idx: usize,
+    batch: spritebatch::SpriteBatch,
 }
 
 impl MainState {
@@ -43,12 +44,15 @@ impl MainState {
             graphics::Rect::new(0.0, 600.0, 800.0, -600.0),
         ];
         let screen_bounds_idx = 0;
+        let i = angle.clone();
+        let batch = spritebatch::SpriteBatch::new(i);
         let s = MainState {
             pos_x: 0.0,
             gridmesh,
             angle,
             screen_bounds,
             screen_bounds_idx,
+            batch,
         };
         Ok(s)
     }
@@ -80,6 +84,7 @@ impl event::EventHandler for MainState {
 
         let origin: na::Point2<f32> = na::origin();
         graphics::draw(ctx, &self.gridmesh, (origin, graphics::WHITE))?;
+        self.draw_coord_labels(ctx)?;
 
         let param = graphics::DrawParam::new()
             .dest(na::Point2::new(400.0, 400.0))
@@ -87,12 +92,30 @@ impl event::EventHandler for MainState {
             // .offset(na::Point2::new(1.0, 1.0))
             .scale(na::Vector2::new(2.0, 2.0))
             .src(graphics::Rect::new(0.5, 0.5, 0.5, 0.5));
-        let dt = graphics::DrawTransform::from(param);
-        println!("transform: {}", dt.matrix);
-
-        self.draw_coord_labels(ctx)?;
 
         graphics::draw(ctx, &self.angle, param)?;
+
+
+        let param = graphics::DrawParam::new()
+            .dest(na::Point2::new(400.0, 400.0))
+            .rotation(self.pos_x / 100.0)
+            .offset(na::Point2::new(0.5, 0.5))
+            .scale(na::Vector2::new(2.0, 2.0))
+            .src(graphics::Rect::new(0.5, 0.5, 0.5, 0.5));
+
+        graphics::draw(ctx, &self.angle, param)?;
+
+        self.batch.clear();
+        for y in 0..4 {
+            for x in 0..6 {
+                let fx = f32::from(x * self.angle.width());
+                let fy = f32::from(y * self.angle.height());
+                let param = graphics::DrawParam::new()
+                    .dest(na::Point2::new(fx, fy));
+                self.batch.add(param);
+            }
+        }
+        graphics::draw(ctx, &self.batch, DrawParam::default())?;
         graphics::present(ctx)?;
         Ok(())
     }

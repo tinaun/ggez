@@ -24,10 +24,7 @@ pub struct Font {
 
 /// A piece of text with optional color, font and font scale information.
 /// These options take precedence over any similar field/argument.
-/// Can be implicitly constructed from `String`, `(String, Color)`, and `(String, FontId, Scale)`.
-///
-/// TODO: Construction should be full builder pattern, if it's not already.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct TextFragment {
     /// Text string itself.
     pub text: String,
@@ -37,17 +34,6 @@ pub struct TextFragment {
     pub font: Option<Font>,
     /// Fragment's scale, defaults to text's scale.
     pub scale: Option<Scale>,
-}
-
-impl Default for TextFragment {
-    fn default() -> Self {
-        TextFragment {
-            text: "".into(),
-            color: None,
-            font: None,
-            scale: None,
-        }
-    }
 }
 
 impl TextFragment {
@@ -481,6 +467,8 @@ where
     let scale_x = screen_w / 2.0;
     let scale_y = screen_h / -2.0;
 
+    // BUGGO TODO: This doesn't work right when the screen is resized, need
+    // to mess with it.
     // gfx_glyph rotates things around the center (1.0, -1.0) with
     // a window rect of (x, y, w, h) = (0.0, 0.0, 2.0, -2.0).
     // We need to a) translate it so that the rotation has the

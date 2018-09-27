@@ -342,7 +342,16 @@ impl Drawable for Image {
         let scaled_width = f32::from(self.width) * src_width * param.scale.x;
         let scaled_height = f32::from(self.height) * src_height * param.scale.y;
 
-        let translate = Matrix4::new_translation(&Vec3::new(param.dest.x, param.dest.y, 0.0));
+        // BUGGO: Offset translation by the offset value to make
+        // it always draw with the offset-point at the `param.dest`
+        // point.
+        // MYSTERIOUSLY, in ggez 0.4 this Just Seems To Happen
+        // without us needing to change anything.  What the heckin'
+        // heck?!
+        let translate = Matrix4::new_translation(&Vec3::new(
+            param.dest.x - (scaled_width * param.offset.x),
+            param.dest.y - (scaled_height * param.offset.y), 
+            0.0));
         let offset = Matrix4::new_translation(&Vec3::new(
             param.offset.x * scaled_width,
             param.offset.y * scaled_height,
