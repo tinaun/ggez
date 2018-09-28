@@ -350,8 +350,9 @@ impl Drawable for Image {
         // heck?!
         let translate = Matrix4::new_translation(&Vec3::new(
             param.dest.x - (scaled_width * param.offset.x),
-            param.dest.y - (scaled_height * param.offset.y), 
-            0.0));
+            param.dest.y - (scaled_height * param.offset.y),
+            0.0,
+        ));
         let offset = Matrix4::new_translation(&Vec3::new(
             param.offset.x * scaled_width,
             param.offset.y * scaled_height,

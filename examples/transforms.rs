@@ -4,7 +4,7 @@ extern crate ggez;
 extern crate nalgebra;
 
 use ggez::event::{self, KeyCode, KeyMods};
-use ggez::graphics::{self, DrawMode, DrawParam, spritebatch};
+use ggez::graphics::{self, spritebatch, DrawMode, DrawParam};
 use ggez::{Context, GameResult};
 use nalgebra as na;
 use std::env;
@@ -95,7 +95,6 @@ impl event::EventHandler for MainState {
 
         graphics::draw(ctx, &self.angle, param)?;
 
-
         let param = graphics::DrawParam::new()
             .dest(na::Point2::new(400.0, 400.0))
             .rotation(self.pos_x / 100.0)
@@ -106,17 +105,18 @@ impl event::EventHandler for MainState {
         graphics::draw(ctx, &self.angle, param)?;
 
         self.batch.clear();
-        for y in 0..4 {
-            for x in 0..6 {
-                let fx = f32::from(x * self.angle.width());
-                let fy = f32::from(y * self.angle.height());
+        for y in 0..3 {
+            for x in 0..2 {
+                let fx = f32::from(x * 100u16);
+                let fy = f32::from(y * 100u16);
                 let param = graphics::DrawParam::new()
-                    .dest(na::Point2::new(fx, fy));
+                    .dest(na::Point2::new(fx, fy))
+                    .scale(na::Vector2::new(0.2, 0.2));
                 self.batch.add(param);
             }
         }
         graphics::draw(ctx, &self.batch, DrawParam::default())?;
-        graphics::present(ctx)?;
+        // graphics::present(ctx)?;
         Ok(())
     }
 
@@ -139,6 +139,62 @@ impl event::EventHandler for MainState {
     }
 }
 
+struct MainStateCanvas {
+    mainstate: MainState,
+    canvas: graphics::Canvas,
+    draw_on_canvas: bool,
+}
+
+impl MainStateCanvas {
+    fn new(ctx: &mut Context) -> GameResult<MainStateCanvas> {
+        let mainstate = MainState::new(ctx)?;
+        let canvas = graphics::Canvas::with_window_size(ctx)?;
+        Ok(MainStateCanvas {
+            mainstate,
+            canvas,
+            draw_on_canvas: false,
+        })
+    }
+}
+
+impl event::EventHandler for MainStateCanvas {
+    fn update(&mut self, _ctx: &mut Context) -> GameResult {
+        self.mainstate.update(_ctx)
+    }
+
+    fn draw(&mut self, ctx: &mut Context) -> GameResult {
+        if self.draw_on_canvas {
+            graphics::set_canvas(ctx, Some(&self.canvas));
+            graphics::clear(ctx, graphics::WHITE);
+            self.mainstate.draw(ctx)?;
+            graphics::set_canvas(ctx, None);
+            graphics::clear(ctx, graphics::WHITE);
+            graphics::draw(ctx, &self.canvas, DrawParam::new())?;
+        } else {
+            self.mainstate.draw(ctx)?;
+        }
+        graphics::present(ctx)
+    }
+
+    fn key_down_event(
+        &mut self,
+        ctx: &mut Context,
+        keycode: KeyCode,
+        _keymod: KeyMods,
+        _repeat: bool,
+    ) {
+        match keycode {
+            event::KeyCode::Return => {
+                self.draw_on_canvas = !self.draw_on_canvas;
+                println!("Drawing on canvas: {}", self.draw_on_canvas);
+            }
+            _ => self
+                .mainstate
+                .key_down_event(ctx, keycode, _keymod, _repeat),
+        }
+    }
+}
+
 pub fn main() -> GameResult {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
@@ -152,6 +208,6 @@ pub fn main() -> GameResult {
         // .window_setup(ggez::conf::WindowSetup::default().srgb(false))
     ;
     let (ctx, event_loop) = &mut cb.build()?;
-    let state = &mut MainState::new(ctx)?;
+    let state = &mut MainStateCanvas::new(ctx)?;
     event::run(ctx, event_loop, state)
 }
