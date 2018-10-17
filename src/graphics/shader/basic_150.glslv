@@ -1,22 +1,22 @@
-#version 150 core
+#version 300 es
 
-in vec2 a_Pos;
-in vec2 a_Uv;
-in vec4 a_VertColor;
+in mediump vec2 a_Pos;
+in mediump vec2 a_Uv;
+in mediump vec4 a_VertColor;
 
-in vec4 a_Src;
-in vec4 a_TCol1;
-in vec4 a_TCol2;
-in vec4 a_TCol3;
-in vec4 a_TCol4;
-in vec4 a_Color;
+in mediump vec4 a_Src;
+in mediump vec4 a_TCol1;
+in mediump vec4 a_TCol2;
+in mediump vec4 a_TCol3;
+in mediump vec4 a_TCol4;
+in mediump vec4 a_Color;
 
 layout (std140) uniform Globals {
-    mat4 u_MVP;
+    mediump mat4 u_MVP;
 };
 
-out vec2 v_Uv;
-out vec4 v_Color;
+out mediump vec2 v_Uv;
+out mediump vec4 v_Color;
 
 void main() {
     v_Uv = a_Uv * a_Src.zw + a_Src.xy;

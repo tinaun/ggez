@@ -33,7 +33,8 @@ zip = { version = "0.4", default-features = false }
 app_dirs2 = "2"
 gfx = "0.17"
 gfx_device_gl = "0.15"
-gfx_glyph = "0.12"
+gfx_glyph = { path = "/home/icefox/src/glyph-brush/gfx-glyph" }
+glyph_brush_layout = { path = "/home/icefox/src/glyph-brush/glyph-brush-layout" }
 gfx_window_glutin = "0.26"
 glutin = "0.18"
 image = {version = "0.19", default-features = false, features = ["gif_codec", "jpeg", "ico", "png_codec", "pnm",

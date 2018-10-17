@@ -1,4 +1,4 @@
-use gfx_glyph::{self, GlyphPositioner, Layout, SectionText, VariedSection};
+use gfx_glyph::{self, Layout, SectionText, VariedSection};
 pub use gfx_glyph::{FontId, HorizontalAlign as Align, Scale};
 use mint;
 use std::borrow::Cow;
@@ -323,22 +323,23 @@ impl Text {
     fn calculate_dimensions(&self, context: &Context) -> (u32, u32) {
         let mut max_width = 0;
         let mut max_height = 0;
-        {
-            let varied_section = self.generate_varied_section(Point2::new(0.0, 0.0), None);
-            let glyphed_section_texts = self.layout
-                .calculate_glyphs(context.gfx_context.glyph_brush.fonts(), &varied_section);
-            for glyphed_section_text in &glyphed_section_texts {
-                let (ref positioned_glyph, ..) = glyphed_section_text;
-                if let Some(rect) = positioned_glyph.pixel_bounding_box() {
-                    if rect.max.x > max_width {
-                        max_width = rect.max.x;
-                    }
-                    if rect.max.y > max_height {
-                        max_height = rect.max.y;
-                    }
-                }
-            }
-        }
+        // use glyph_brush_layout::GlyphPositioner
+        // {
+        //     let varied_section = self.generate_varied_section(Point2::new(0.0, 0.0), None);
+        //     let glyphed_section_texts = self.layout
+        //         .calculate_glyphs(context.gfx_context.glyph_brush.fonts(), &varied_section);
+        //     for glyphed_section_text in &glyphed_section_texts {
+        //         let (ref positioned_glyph, ..) = glyphed_section_text;
+        //         if let Some(rect) = positioned_glyph.pixel_bounding_box() {
+        //             if rect.max.x > max_width {
+        //                 max_width = rect.max.x;
+        //             }
+        //             if rect.max.y > max_height {
+        //                 max_height = rect.max.y;
+        //             }
+        //         }
+        //     }
+        // }
         let (width, height) = (max_width as u32, max_height as u32);
         if let Ok(mut metrics) = self.cached_metrics.write() {
             metrics.width = Some(width);
@@ -454,6 +455,7 @@ where
     context.gfx_context.glyph_brush.queue(varied_section);
 }
 
+/*
 /// Exposes `gfx_glyph`'s `GlyphBrush::queue()` and `GlyphBrush::queue_custom_layout()`,
 /// in case `ggez`' API is insufficient.
 pub fn queue_text_raw<'a, S, G>(context: &mut Context, section: S, custom_layout: Option<&G>)
@@ -467,6 +469,7 @@ where
         None => brush.queue(section),
     }
 }
+*/
 
 /// Draws all of `queue()`d `Text`es.
 ///

@@ -114,7 +114,8 @@ where
         let gl_builder = glutin::ContextBuilder::new()
             //GlRequest::Specific(Api::OpenGl, (backend.major, backend.minor))
             // TODO: Fix the "Latest" here.
-            .with_gl(glutin::GlRequest::Latest)
+            // .with_gl(glutin::GlRequest::Latest)
+            .with_gl(glutin::GlRequest::Specific(glutin::Api::OpenGlEs, (3, 0)))
             .with_gl_profile(glutin::GlProfile::Core)
             .with_multisampling(window_setup.samples as u16)
             // TODO: Better pixel format here?

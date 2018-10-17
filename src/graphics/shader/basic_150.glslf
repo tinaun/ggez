@@ -1,12 +1,12 @@
-#version 150 core
+#version 300 es
 
-uniform sampler2D t_Texture;
-in vec2 v_Uv;
-in vec4 v_Color;
-out vec4 Target0;
+uniform mediump sampler2D t_Texture;
+in mediump vec2 v_Uv;
+in mediump vec4 v_Color;
+out mediump vec4 Target0;
 
 layout (std140) uniform Globals {
-    mat4 u_MVP;
+    mediump mat4 u_MVP;
 };
 
 void main() {
