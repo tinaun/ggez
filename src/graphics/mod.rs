@@ -244,6 +244,7 @@ impl BackendSpec for GlBackendSpec {
         ),
         glutin::CreationError,
     > {
+        println!("{:?}", window_builder);
         use gfx_window_glutin;
         gfx_window_glutin::init_raw(
             window_builder,
@@ -280,9 +281,16 @@ impl BackendSpec for GlBackendSpec {
         gfx::handle::RawRenderTargetView<Self::Resources>,
         gfx::handle::RawDepthStencilView<Self::Resources>,
     )> {
-        // Basically taken from the definition of
+
+        // Basically taken from the definition of 
         // gfx_window_glutin::update_views()
         let dim = color_view.get_dimensions();
+        let (width, height) = {
+        let size = window.get_inner_size().unwrap().to_physical(window.get_hidpi_factor());
+        (size.width, size.height)
+        };
+
+        println!("{:?} {} {}", dim, width, height);
         assert_eq!(dim, depth_view.get_dimensions());
         use gfx_window_glutin;
         if let Some((cv, dv)) =

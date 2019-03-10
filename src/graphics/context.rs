@@ -118,6 +118,7 @@ impl GraphicsContextGeneric<GlBackendSpec> {
             .with_vsync(window_setup.vsync);
 
         let mut window_builder = winit::WindowBuilder::new()
+            .with_dimensions(dpi::LogicalSize::new(window_mode.width.into(), window_mode.height.into()))
             .with_title(window_setup.title.clone())
             .with_transparency(window_setup.transparent)
             .with_resizable(window_mode.resizable);

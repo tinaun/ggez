@@ -30,20 +30,38 @@ impl event::EventHandler for MainState {
         let circle = graphics::Mesh::new_circle(
             ctx,
             graphics::DrawMode::fill(),
-            na::Point2::new(self.pos_x, 380.0),
+            na::Point2::new(self.pos_x, 100.0),
             100.0,
-            2.0,
+            0.5,
             graphics::WHITE,
         )?;
         graphics::draw(ctx, &circle, (na::Point2::new(0.0, 0.0),))?;
+        let bircle = graphics::Mesh::new_circle(
+            ctx,
+            graphics::DrawMode::fill(),
+            na::Point2::new(self.pos_x, 100.0),
+            100.0,
+            0.5,
+            graphics::BLACK,
+        )?;
+        graphics::draw(ctx, &bircle, (na::Point2::new(0.0, 200.0),))?;
+        graphics::draw(ctx, &circle, (na::Point2::new(0.0, 400.0),))?;
 
         graphics::present(ctx)?;
         Ok(())
     }
+
+    fn resize_event(&mut self, ctx: &mut Context, w: f32, h: f32) {
+        graphics::set_screen_coordinates(ctx, graphics::Rect::new(0., 0., w, h)).unwrap();
+        //graphics::set_resolution(ctx, w, h).unwrap();
+        println!("{:?}", graphics::drawable_size(ctx));
+    }
 }
 
 pub fn main() -> GameResult {
-    let cb = ggez::ContextBuilder::new("super_simple", "ggez");
+    let cb = ggez::ContextBuilder::new("super_simple", "ggez").window_mode(
+        ggez::conf::WindowMode::default().resizable(true)
+    );
     let (ctx, event_loop) = &mut cb.build()?;
     let state = &mut MainState::new(ctx)?;
     event::run(ctx, event_loop, state)

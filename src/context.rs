@@ -119,6 +119,7 @@ impl Context {
             winit_event::Event::WindowEvent { event, .. } => match event {
                 winit_event::WindowEvent::Resized(_) => {
                     self.gfx_context.resize_viewport();
+                    //println!("{:?}", self.gfx_context.transform());
                 }
                 winit_event::WindowEvent::CursorMoved {
                     position: dpi::LogicalPosition { x, y },
